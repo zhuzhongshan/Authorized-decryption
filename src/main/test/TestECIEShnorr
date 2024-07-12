@@ -1,0 +1,127 @@
+package net.nharyes.secrete.ecies;
+
+import net.nharyes.secrete.ECIESChnorr.ECIShcnorr;
+import org.bouncycastle.math.ec.ECPoint;
+import org.junit.Test;
+
+import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
+public class TestECIEShnorr {
+
+    private static final int BUFFER_SIZE = 1024; // 定义缓冲区大小
+    public String openFile(String path){
+        File file = new File(path); // 替换为文件路径
+        StringBuilder contentBuilder = new StringBuilder();
+
+        try (FileReader reader = new FileReader(file)) {
+            int i;
+            while ((i = reader.read()) != -1) {
+                contentBuilder.append((char) i);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String content = contentBuilder.toString();
+        return content;
+    }
+
+    @Test
+    public void test02() throws  Exception{
+        long startTime = 0;
+        long endTime = 0;
+        long duration = 0;
+        double durationInMs = 0.0;
+
+        //读取内容
+        String message = openFile("D:\\study\\SpringBootStudy\\StudyProject\\large12800.txt");
+        SecureRandom secureRandom = new SecureRandom();
+        ECIShcnorr.KeyPair aliceKeyPair = ECIShcnorr.generateKeyPair(secureRandom);
+//        System.out.println(aliceKeyPair.privateKey);
+        ECIShcnorr.KeyPair bobKeyPair = ECIShcnorr.generateKeyPair(secureRandom);
+        ECPoint R = null;
+        ECPoint onePub = null;
+        byte[] encrypt=null;
+        BigInteger onePri= null;
+        BigInteger s = null;
+
+        int counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //alice局部签名
+            R = ECIShcnorr.partSig(secureRandom);
+            counter++; // 计数器增加
+        }
+        System.out.println("局部函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //生成一次性公钥
+            onePub = ECIShcnorr.OneTimepublicKey(aliceKeyPair.publicKey, R, message, bobKeyPair.publicKey);
+            counter++; // 计数器增加
+        }
+        System.out.println("一次性公钥函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //加密
+            encrypt = ECIShcnorr.encrypt(message, secureRandom, onePub);
+            counter++; // 计数器增加
+        }
+        System.out.println("加密函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //授权算法
+            s = ECIShcnorr.auth(aliceKeyPair.privateKey, ECIShcnorr.getR(), message, R);
+            counter++; // 计数器增加
+        }
+        System.out.println("授权函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //生成一次私钥
+            onePri = ECIShcnorr.OneTimePri(bobKeyPair.privateKey, s);
+            counter++; // 计数器增加
+        }
+        System.out.println("一次私钥函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //解密
+            String decrypt = ECIShcnorr.decrypt(encrypt, onePri);
+//            if(counter == 1) System.out.println(decrypt);
+            counter++; // 计数器增加
+        }
+        System.out.println("解密函数在10秒内执行了 " + counter + " 次");
+
+        counter = 0;
+        startTime = System.nanoTime(); // 获取当前时间的纳秒值
+        endTime = startTime + 10 * 1_000_000_000L; // 10秒后的时间纳秒
+        while (System.nanoTime() < endTime) {
+            //验签
+            boolean verify = ECIShcnorr.verify(message, R, s, aliceKeyPair.publicKey);
+            counter++; // 计数器增加
+        }
+        System.out.println("验签函数在10秒内执行了 " + counter + " 次");
+
+    }
+
+}
