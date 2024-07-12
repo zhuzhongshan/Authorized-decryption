@@ -1,1 +1,5 @@
 The authorization decryption scheme is implemented by combining SM2 algorithm and Schnorr signature algorithm.
+
+The GenerateFile class is used to generate different file sizes.
+ECISchnorr class implements the logic of each algorithm in the scheme.
+The TestECISchnorr class is used to test the execution time of individual algorithms.
